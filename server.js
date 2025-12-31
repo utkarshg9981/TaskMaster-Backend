@@ -72,4 +72,4 @@ app.use((req, res) => {
 // });
 
 // do not use app.listen in vercel deployment
-module.exports = app;
+export default app;
