@@ -7,13 +7,34 @@ import taskRoutes from './routes/taskRoutes.js';
 
 dotenv.config();
 
-connectDB();
+let isConnected = false;
+
+
 
 const app = express();
+
+
+app.use((req, res, next) => {
+  if(!isConnected) {
+    connectDB().then(() => {
+      isConnected = true;
+      next();
+    }).catch((err) => {
+      console.error('Failed to connect to DB', err);
+      res.status(500).json({ success: false, message: 'Database connection error' });
+    });
+  } else {
+    next();
+  }
+}
+)
+
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
 
 // Routes
 app.get('/', (req, res) => {
@@ -45,7 +66,10 @@ app.use((req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => {
+//   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+// });
+
+// do not use app.listen in vercel deployment
+module.exports = app;
